@@ -1,0 +1,74 @@
+# coding=utf-8
+__author__ = 'anton'
+from selenium import webdriver
+user_agent = (
+    "Mozilla/5.0 (Windows NT 10.0; WOW64) " +
+    "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36"
+)
+#функция считывает новости с marketgid
+def Sbor():
+    driver = webdriver.Firefox()
+    driver.set_script_timeout(10)
+    driver.set_page_load_timeout(200)
+    driver.implicitly_wait(10)
+    url = "http://news.marketgid.com/"
+    driver.get(url)
+    for i in range(4):
+        s = driver.find_element_by_xpath(".//*[@id='center']/div/div/div[" + str(i + 1) + "]/a[2]").text
+        f = open('text.txt', 'a')
+        f.write('"' + s.encode('utf-8') +'"' + '\n')
+        f.close()
+    driver.close()
+# функция собирает топ 10
+def SborUrl():
+    driver = webdriver.Firefox()
+    driver.set_script_timeout(10)
+    driver.set_page_load_timeout(200)
+    driver.implicitly_wait(20)
+    url = "https://www.google.by/search?q="
+    driver.get(url)
+    fil = open('text.txt', 'r')
+    fil_q = open('url.txt', 'a')
+    for line in fil:
+        line
+        driver.get(url + line)
+        w = driver.execute_script("return document.getElementsByClassName('srg').length") # Проверка есть ли запрос
+        q = driver.execute_script("return document.getElementsByClassName('g').length") # Количество ссылок
+        a = driver.execute_script("return document.getElementsByClassName('mnr-c _yE').length") # проверка есть ли новости
+        z = driver.execute_script("return document.getElementsByClassName('rg_r').length") # проверка есть ли картинки
+        if w == 0:
+            fil_q.write(line + "  Запрос не найден" + '\n')
+        if w != 0:
+            if a == 0 and z == 0:
+                for i_url in range(1, q + 1, 1):
+                        driver.implicitly_wait(20)
+                        j_url = 2
+                        url_str = driver.find_element_by_xpath(".//*[@id='rso']/div[" + str(j_url) + "]/div[" + str(i_url) + "]/div/div/div/div[1]/cite").text
+                        print(url_str)
+                        fil_q.write(url_str.encode('utf-8') + '\n')
+            if a == 0 and z == 1:
+                try:
+                    for i_url in range(1, q, 1):
+                        driver.implicitly_wait(20)
+                        j_url = 2
+                        url_str = driver.find_element_by_xpath(".//*[@id='rso']/div[" + str(j_url) + "]/div[" + str(i_url) + "]/div/div/div/div[1]/cite").text
+                        print(url_str)
+                        fil_q.write(url_str.encode('utf-8') + '\n')
+                except:
+                    j_url = 3
+                    for i2_url in range(1, 10 - i_url, 1):
+                        url_str = driver.find_element_by_xpath(".//*[@id='rso']/div[" + str(j_url) + "]/div[" + str(i2_url) + "]/div/div/div/div[1]/cite").text
+                        fil_q.write(url_str.encode('utf-8') + '\n')
+                        print(url_str)
+            if a == 1:
+                try:
+                    for i3_url in range(1, q + 1, 1):
+                        driver.implicitly_wait(20)
+                        j_url = 3
+                        url_str = driver.find_element_by_xpath(".//*[@id='rso']/div[" + str(j_url) + "]/div[" + str(i3_url) + "]/div/div/div/div[1]/cite").text
+                        fil_q.write(url_str.encode('utf-8') + '\n')
+                        print(url_str)
+                except:
+                    i3_url = 10
+    fil_q.close()
+    driver.close()
